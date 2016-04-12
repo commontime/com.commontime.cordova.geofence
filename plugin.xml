@@ -124,15 +124,22 @@
                 <string>remote-notification</string>
             </array>
         </config-file>
+        
         <config-file target="config.xml" parent="/*">
           <feature name="GeofencePlugin">
-            <param name="ios-package" value="HWPGeofencePlugin"/>
+            <param name="ios-package" value="CTGeofencePlugin"/>
           </feature>
         </config-file>
-        <header-file src="src/ios/Geo-Bridging-Header.h" />
-        <source-file src="src/ios/GeofencePlugin.swift"/>
-        <source-file src="src/ios/SwiftData.swift"/>
-        <source-file src="src/ios/SwiftyJson.swift"/>
+        
+        <header-file src="src/ios/CTGeofencePlugin.h" />
+        <source-file src="src/ios/CTGeofencePlugin.m" />
+        
+        <header-file src="src/ios/CTGeofenceManager.h" />
+        <source-file src="src/ios/CTGeofenceManager.m" />
+        
+        <header-file src="src/ios/CTGeofenceStore.h" />
+        <source-file src="src/ios/CTGeofenceStore.m" />
+                
         <framework src="libsqlite3.dylib"/>
     </platform>
 </plugin>
