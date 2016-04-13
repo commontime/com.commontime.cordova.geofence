@@ -25,6 +25,10 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
 @property (nonatomic, readwrite, strong) CLLocationManager* locationManager;
 @property (nonatomic, readwrite, strong) CTGeofenceStore* store;
 
+#ifdef DEBUG
+@property (nonnull, readwrite, strong) CLLocation* lastLocation;
+#endif
+
 @end
 
 @implementation CTGeofenceManager
@@ -36,6 +40,11 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
     self.locationManager = [[CLLocationManager alloc] init];
     self.locationManager.delegate = self;
     self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+    
+    if ([self.locationManager respondsToSelector: @selector(allowsBackgroundLocationUpdates)])
+    {
+      self.locationManager.allowsBackgroundLocationUpdates = YES;
+    }
     
     if ([CLLocationManager locationServicesEnabled])
     {
@@ -52,6 +61,10 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
     }
     
     self.store = [[CTGeofenceStore alloc] init];
+    
+#ifdef DEBUG
+    //[self.locationManager startUpdatingLocation];
+#endif    
   }
   
   return self;
@@ -102,11 +115,11 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
 
 - (void) handleTransitionWithRegion: (CLRegion*) region type: (CTGeofenceTransitionType) type
 {
-  id JSON = [self.store notificationForIdentifer: region.identifier];
+  NSMutableDictionary* JSON = [NSMutableDictionary dictionaryWithDictionary: [self.store notificationForIdentifer: region.identifier]];
   
   if (JSON)
   {
-    [JSON setObject: [NSNumber numberWithInteger: type] forKey: @"transitionType"];
+    JSON[@"transitionType"] = [NSNumber numberWithInteger: type];
     
     if (JSON[@"notification"])
     {
@@ -229,11 +242,37 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
   }
 }
 
+#ifdef DEBUG
+
+- (void) logDistanceToGeofences
+{
+  if (self.lastLocation)
+  {
+    for (CLRegion* region in [self.locationManager monitoredRegions])
+    {
+      CLLocation* center = [[CLLocation alloc] initWithLatitude: region.center.latitude longitude: region.center.longitude];
+      
+      NSLog(@"%@ is %.1f metres from current location", region.identifier, [center distanceFromLocation: self.lastLocation]);
+    }
+  }
+  else
+  {
+    NSLog(@"No last location");
+  }
+}
+
+#endif
+
 #pragma mark - CLLocationManagerDelegate
 
 - (void) locationManager: (CLLocationManager*) manager didUpdateLocations: (NSArray<CLLocation *>*) locations
 {
   NSLog(@"did update locations");
+  
+#ifdef DEBUG
+  self.lastLocation = locations[locations.count - 1];
+  [self logDistanceToGeofences];
+#endif
 }
 
 - (void) locationManager: (CLLocationManager*) manager didFailWithError: (NSError*) error

@@ -33,6 +33,10 @@
     {
       self = nil;
     }
+    
+#ifdef DEBUG
+      [self logTable];
+#endif
   }
   
   return self;
@@ -115,21 +119,21 @@
 - (BOOL) createTable
 {
   NSString* query = @"CREATE TABLE GeoNotifications (ID TEXT PRIMARY KEY, Data TEXT);";
-  sqlite3_stmt* handle = NULL;
+  sqlite3_stmt* statement = NULL;
   BOOL success = NO;
   
-  if (sqlite3_prepare_v2(self.database, [query UTF8String], -1, &handle, NULL) == SQLITE_OK)
+  if (sqlite3_prepare_v2(self.database, [query UTF8String], -1, &statement, NULL) == SQLITE_OK)
   {
-    success = sqlite3_step(handle) == SQLITE_DONE;
+    success = sqlite3_step(statement) == SQLITE_DONE;
   }
   else
   {
     [self logLastError];
   }
 
-  if (handle)
+  if (statement)
   {
-    sqlite3_finalize(handle);
+    sqlite3_finalize(statement);
   }
   
   return success;
@@ -248,6 +252,7 @@
   sqlite3_stmt* statement = NULL;
   id JSON = nil;
   NSError* error = nil;
+  BOOL success = NO;
 
   if (sqlite3_prepare_v2(self.database, [query UTF8String], -1, &statement, NULL) == SQLITE_OK)
   {
@@ -259,10 +264,12 @@
     {
       const unsigned char* bytes = sqlite3_column_text(statement, 0);
       size_t length = strlen((const char*) bytes);
-      NSData* data = [[NSData alloc] initWithBytesNoCopy: (void*) bytes length: length];
+      NSData* data = [[NSData alloc] initWithBytesNoCopy: (void*) bytes length: length freeWhenDone: NO];
       
       JSON = [NSJSONSerialization JSONObjectWithData: data options: 0 error: &error];
     }
+    
+    success = YES;
   }
   
   if (statement)
@@ -270,7 +277,7 @@
     sqlite3_finalize(statement);
   }
   
-  if (!JSON)
+  if (!success)
   {
     if (error)
     {
@@ -298,7 +305,7 @@
     {
       const unsigned char* bytes = sqlite3_column_text(statement, 0);
       size_t length = strlen((const char*) bytes);
-      NSData* data = [[NSData alloc] initWithBytesNoCopy: (void*) bytes length: length];
+      NSData* data = [[NSData alloc] initWithBytesNoCopy: (void*) bytes length: length freeWhenDone: NO];
       NSError* error = nil;
       id JSON = [NSJSONSerialization JSONObjectWithData: data options: 0 error: &error];
       
@@ -382,5 +389,41 @@
     [self logLastError];
   }
 }
+
+#ifdef DEBUG
+
+- (void) logTable
+{
+  NSString* query = @"SELECT Id, Data FROM GeoNotifications;";
+  sqlite3_stmt* statement = NULL;
+  BOOL success = NO;
+  
+  if (sqlite3_prepare_v2(self.database, [query UTF8String], -1, &statement, NULL) == SQLITE_OK)
+  {
+    NSLog(@"Id, Data");
+    
+    while (sqlite3_step(statement) == SQLITE_ROW)
+    {
+      const unsigned char* identifier = sqlite3_column_text(statement, 0);
+      const unsigned char* data = sqlite3_column_text(statement, 1);
+      
+      NSLog(@"%s, %s", identifier, data);
+    }
+    
+    success = YES;
+  }
+  
+  if (statement)
+  {
+    sqlite3_finalize(statement);
+  }
+  
+  if (!success)
+  {
+    [self logLastError];
+  }
+}
+
+#endif
 
 @end

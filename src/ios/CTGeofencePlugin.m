@@ -53,8 +53,10 @@
       
       if ([notificationData isKindOfClass: [NSString class]])
       {
-        NSString* javascript = [NSString stringWithFormat: @"setTimeout('geofence.onNotificationClicked(%@)',0)", notificationData];
+        NSString* javascript = [NSString stringWithFormat: @"setTimeout(function() { geofence.onNotificationClicked(%@); }, 0)", notificationData];
         
+        NSLog(@"Executing: %@", javascript);
+
         [(UIWebView*) self.webView stringByEvaluatingJavaScriptFromString: javascript];
       }
     }
@@ -67,7 +69,9 @@
   
   if ([notification.object isKindOfClass: [NSString class]])
   {
-    NSString* javascript = [NSString stringWithFormat: @"setTimeout('geofence.onTransitionReceived([%@])',0)", notification.object];
+    NSString* javascript = [NSString stringWithFormat: @"setTimeout(function() { window.geofence.onTransitionReceived([%@]); }, 0);", notification.object];
+    
+    NSLog(@"Executing: %@", javascript);
     
     [(UIWebView*) self.webView stringByEvaluatingJavaScriptFromString: javascript];
   }
@@ -111,7 +115,19 @@
   {
     for (id argument in command.arguments)
     {
-      [self.manager addOrUpdateNotification: argument];
+      if ([argument isKindOfClass: [NSDictionary class]])
+      {
+        [self.manager addOrUpdateNotification: argument];
+      }
+      else
+      {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
+                                                    messageAsString: @"expected identifier"];
+        
+        [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+        
+        return;
+      }
     }
     
     CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK];
@@ -129,17 +145,75 @@
 
 - (void) getWatched: (CDVInvokedUrlCommand*) command
 {
-  // TODO:
+  @try
+  {
+    NSArray* allNotifications = [self.manager allWatchedNotifications];
+    
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK
+                                                 messageAsArray: allNotifications];
+    
+    [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+  }
+  @catch (NSException *exception)
+  {
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
+                                                messageAsString: [exception reason]];
+    
+    [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+  }
 }
 
 - (void) remove: (CDVInvokedUrlCommand*) command
 {
-  // TODO:
+  @try
+  {
+    for (id argument in command.arguments)
+    {
+      if ([argument isKindOfClass: [NSString class]])
+      {
+        [self.manager removeNotificationForIdentifier: argument];
+      }
+      else
+      {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
+                                                    messageAsString: @"expected identifier"];
+        
+        [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+        
+        return;
+      }
+    }
+    
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK];
+    
+    [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+  }
+  @catch (NSException *exception)
+  {
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
+                                                messageAsString: [exception reason]];
+    
+    [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+  }
 }
 
 - (void) removeAll: (CDVInvokedUrlCommand*) command
 {
-  // TODO:
+  @try
+  {
+    [self.manager removeAllNotifications];
+    
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK];
+    
+    [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+  }
+  @catch (NSException *exception)
+  {
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
+                                                messageAsString: [exception reason]];
+    
+    [self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+  }
 }
 
 @end
