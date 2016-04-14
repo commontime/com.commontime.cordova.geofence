@@ -115,18 +115,20 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
 
 - (void) handleTransitionWithRegion: (CLRegion*) region type: (CTGeofenceTransitionType) type
 {
-  NSMutableDictionary* JSON = [NSMutableDictionary dictionaryWithDictionary: [self.store notificationForIdentifer: region.identifier]];
+  NSDictionary* JSON = [self.store notificationForIdentifer: region.identifier];
   
   if (JSON)
   {
-    JSON[@"transitionType"] = [NSNumber numberWithInteger: type];
+    NSMutableDictionary* transition = [NSMutableDictionary dictionaryWithDictionary: JSON];
+
+    transition[@"transitionType"] = [NSNumber numberWithInteger: type];
     
-    if (JSON[@"notification"])
+    if ([transition[@"notification"] isKindOfClass: [NSDictionary class]])
     {
       [self scheduleNotification: JSON];
     }
     
-    NSData* data = [NSJSONSerialization dataWithJSONObject: JSON options: 0 error: NULL];
+    NSData* data = [NSJSONSerialization dataWithJSONObject: transition options: 0 error: NULL];
     
     if (data)
     {
@@ -250,9 +252,13 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
   {
     for (CLRegion* region in [self.locationManager monitoredRegions])
     {
-      CLLocation* center = [[CLLocation alloc] initWithLatitude: region.center.latitude longitude: region.center.longitude];
-      
-      NSLog(@"%@ is %.1f metres from current location", region.identifier, [center distanceFromLocation: self.lastLocation]);
+      if ([region isKindOfClass: [CLCircularRegion class]])
+      {
+        CLCircularRegion* circularRegion = (CLCircularRegion*) region;
+        CLLocation* center = [[CLLocation alloc] initWithLatitude: circularRegion.center.latitude longitude: circularRegion.center.longitude];
+        
+        NSLog(@"%@ is %.1f metres from current location", region.identifier, [center distanceFromLocation: self.lastLocation]);
+      }
     }
   }
   else
@@ -267,11 +273,17 @@ typedef NS_ENUM(NSInteger, CTGeofenceTransitionType)
 
 - (void) locationManager: (CLLocationManager*) manager didUpdateLocations: (NSArray<CLLocation *>*) locations
 {
-  NSLog(@"did update locations");
-  
 #ifdef DEBUG
-  self.lastLocation = locations[locations.count - 1];
-  [self logDistanceToGeofences];
+  if (locations.count > 0)
+  {
+    self.lastLocation = locations[locations.count - 1];
+    
+    NSLog(@"did update locations; last location is %@", self.lastLocation);
+    
+    [self logDistanceToGeofences];
+  }
+#else
+  NSLog(@"did update locations");
 #endif
 }
 

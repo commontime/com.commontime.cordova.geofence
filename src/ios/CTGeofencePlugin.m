@@ -53,7 +53,7 @@
       
       if ([notificationData isKindOfClass: [NSString class]])
       {
-        NSString* javascript = [NSString stringWithFormat: @"setTimeout(function() { geofence.onNotificationClicked(%@); }, 0)", notificationData];
+        NSString* javascript = [NSString stringWithFormat: @"setTimeout(function() { window.geofence.onNotificationClicked(%@); }, 0)", notificationData];
         
         NSLog(@"Executing: %@", javascript);
 
@@ -69,7 +69,7 @@
   
   if ([notification.object isKindOfClass: [NSString class]])
   {
-    NSString* javascript = [NSString stringWithFormat: @"setTimeout(function() { window.geofence.onTransitionReceived([%@]); }, 0);", notification.object];
+    NSString* javascript = [NSString stringWithFormat: @"window.geofence.onTransitionReceived([%@]);", notification.object];
     
     NSLog(@"Executing: %@", javascript);
     
