@@ -67,9 +67,11 @@ For listening of geofence transistion you can override onTransitionReceived meth
 
 ## Constants
 
-- `TransitionType.ENTER` = 1
-- `TransitionType.EXIT` = 2
-- `TransitionType.BOTH` = 3
+- `window.geofence.TRANSITION_ENTER` = 1
+- `window.geofence.TRANSITION_EXIT` = 2
+- `window.geofence.TRANSITION_BOTH` = 3
+
+Note, these replace the original TransitionType.*x* constants.
 
 ## Plugin initialization
 
@@ -303,7 +305,7 @@ This plugin uses Google Play Services so you need to have it installed on your d
 
 ##iOS
 
-Plugin is written in Swift. All xcode project options to enable swift support are set up automatically after plugin is installed.
+Plugin has been rewritten in Objective C, ported from the original Swift source.
 
 ##Windows phone 8.1
 

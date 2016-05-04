@@ -100,7 +100,13 @@ module.exports = {
      */
     ping: function (success, error) {
         return execPromise(success, error, "GeofencePlugin", "ping", []);
-    }
+    },  
+    /**
+     * TransitionType constants
+     */
+    TRANSITION_ENTER: 1,
+    TRANSITION_EXIT: 2,
+    TRANSITION_BOTH: 3
 };
 
 function execPromise(success, error, pluginName, method, args) {
