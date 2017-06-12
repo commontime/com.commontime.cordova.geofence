@@ -71,6 +71,8 @@
 			<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </config-file>
 
+	<framework src="gradle/build-extras.gradle" custom="true" type="gradleReference" />
+
     </platform>
     <!-- wp8 -->
     <platform name="wp8">
