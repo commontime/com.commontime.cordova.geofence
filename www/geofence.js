@@ -136,13 +136,13 @@ function coerceProperties(geofence) {
         throw new Error("Geofence id is not provided");
     }
 
-    if (geofence.latitude) {
+    if (geofence.latitude !== null && geofence.latitude !== undefined) {
         geofence.latitude = coerceNumber("Geofence latitude", geofence.latitude);
     } else {
         throw new Error("Geofence latitude is not provided");
     }
 
-    if (geofence.longitude) {
+    if (geofence.longitude !== null && geofence.longitude !== undefined) {
         geofence.longitude = coerceNumber("Geofence longitude", geofence.longitude);
     } else {
         throw new Error("Geofence longitude is not provided");
