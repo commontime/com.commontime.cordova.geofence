@@ -40,22 +40,10 @@ public class GeoNotificationNotifier {
             String packageName = context.getPackageName();
             Intent resultIntent = context.getPackageManager()
                     .getLaunchIntentForPackage(packageName);
-
             if (notification.data != null) {
                 resultIntent.putExtra("geofence.notification.data", notification.getDataJson());
             }
-            // The stack builder object will contain an artificial back stack
-            // for the
-            // started Activity.
-            // This ensures that navigating backward from the Activity leads out
-            // of
-            // your application to the Home screen.
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-            // Adds the back stack for the Intent (but not the Intent itself)
-            // Adds the Intent that starts the Activity to the top of the stack
-            stackBuilder.addNextIntent(resultIntent);
-            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
-                    PENDING_INTENT_REQUEST_CODE, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent resultPendingIntent = PendingIntent.getActivity(context, PENDING_INTENT_REQUEST_CODE, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(resultPendingIntent);
         }
         try {
