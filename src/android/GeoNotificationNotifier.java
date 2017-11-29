@@ -2,7 +2,6 @@ package com.cowbell.cordova.geofence;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
@@ -11,8 +10,6 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
-
-import com.commontime.testbed.MainActivity;
 
 public class GeoNotificationNotifier {
     private NotificationManager notificationManager;
