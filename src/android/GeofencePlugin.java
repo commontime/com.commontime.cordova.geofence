@@ -105,4 +105,18 @@ public class GeofencePlugin extends CordovaPlugin {
             webView.sendJavascript(js);
         }
     }
+    
+    @Override
+    public void onNewIntent(Intent intent) {
+        String data = intent.getStringExtra("geofence.notification.data");
+        String js = "setTimeout('geofence.onNotificationClicked("
+                + data + ")',0)";
+
+        if (data == null) {
+            Log.d(TAG, "No notifications clicked.");
+        } else {
+            webView.sendJavascript(js);
+        }
+        super.onNewIntent(intent);
+    }
 }

@@ -2,6 +2,7 @@ package com.cowbell.cordova.geofence;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
@@ -11,11 +12,14 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.commontime.testbed.MainActivity;
+
 public class GeoNotificationNotifier {
     private NotificationManager notificationManager;
     private Context context;
     private BeepHelper beepHelper;
     private Logger logger;
+    private final int PENDING_INTENT_REQUEST_CODE = 80;
 
     public GeoNotificationNotifier(NotificationManager notificationManager,
             Context context) {
@@ -54,7 +58,7 @@ public class GeoNotificationNotifier {
             // Adds the Intent that starts the Activity to the top of the stack
             stackBuilder.addNextIntent(resultIntent);
             PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
-                    0, PendingIntent.FLAG_UPDATE_CURRENT);
+                    PENDING_INTENT_REQUEST_CODE, PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(resultPendingIntent);
         }
         try {
@@ -62,7 +66,7 @@ public class GeoNotificationNotifier {
             Ringtone r = RingtoneManager.getRingtone(context, notificationSound);
             r.play();
         } catch (Exception e) {
-        	beepHelper.startTone("beep_beep_beep");
+            beepHelper.startTone("beep_beep_beep");
             e.printStackTrace();
         }
         notificationManager.notify(notification.id, mBuilder.build());
